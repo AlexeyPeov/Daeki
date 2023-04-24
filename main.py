@@ -1,16 +1,49 @@
-import kivy
+import os
 
-from kivy.app import App
-from kivy.uix.label import Label
-
-kivy.require('1.9.0')
+import requests
+from bs4 import BeautifulSoup
 
 
-class Aboba(App):
+def get_movie_rating():
+    if not os.path.exists("rejected_movies.txt"):
+        with open("rejected_movies.txt", "w") as f:
+            pass
 
-    def build(self):
-        return Label(text="Aboba")
+    while True:
+        try:
+            rating = float(input("Введите рейтинг фильма: "))
+            if rating < 0 or rating > 10:
+                print("Рейтинг должен быть в диапазоне от 0 до 10")
+                continue
+            break
+        except ValueError:
+            print("Введите число")
 
+    with open("rejected_movies.txt", "r") as f:
+        rejected_movies = f.read().splitlines()
 
-aboba = Aboba()
-aboba.run()
+    while True:
+        url = f"https://www.imdb.com/chart/top?ref_=nv_mv_250"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        movie_tags = soup.select("td.titleColumn a")
+        ratings_tags = soup.select("td.posterColumn span[name='ir']")
+
+        for i in range(len(movie_tags)):
+            movie = movie_tags[i].text.strip()
+            year = movie_tags[i]["title"].split()[-1]
+            rating = float(ratings_tags[i]["data-value"])
+            if rating >= rating and movie not in rejected_movies:
+                print(f"Фильм: {movie} ({year}) Рейтинг: {rating}")
+                choice = input("Хотите посмотреть этот фильм? (y/n): ")
+                if choice == "y":
+                    return movie
+                elif choice == "n":
+                    with open("rejected_movies.txt", "a") as f:
+                        f.write(f"{movie}\n")
+                    continue
+
+        print("Нет фильмов с таким рейтингом")
+        break
+
+get_movie_rating()

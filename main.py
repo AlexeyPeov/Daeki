@@ -1,49 +1,52 @@
-import os
-
 import requests
 from bs4 import BeautifulSoup
 
-
-def get_movie_rating():
-    if not os.path.exists("rejected_movies.txt"):
-        with open("rejected_movies.txt", "w") as f:
-            pass
-
-    while True:
-        try:
-            user_rating = float(input("Введите рейтинг фильма: "))
-            if user_rating < 0 or user_rating > 10:
-                print("Рейтинг должен быть в диапазоне от 0 до 10")
-                continue
-            break
-        except ValueError:
-            print("Введите число")
-
-    with open("rejected_movies.txt", "r") as f:
-        rejected_movies = f.read().splitlines()
-
-    while True:
-        url = f"https://www.imdb.com/chart/top?ref_=nv_mv_250"
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        movie_tags = soup.select("td.titleColumn a")
-        ratings_tags = soup.select("td.posterColumn span[name='ir']")
-
-        for i in range(len(movie_tags)):
-            movie = movie_tags[i].text.strip()
-            year = movie_tags[i]["title"].split()[-1]
-            movie_rating = float(ratings_tags[i]["data-value"])
-            if movie_rating >= user_rating and movie not in rejected_movies:
-                print(f"Фильм: {movie} ({year}) Рейтинг: {movie_rating}")
-                choice = input("Хотите посмотреть этот фильм? (y/n): ")
-                if choice == "y":
-                    return movie
-                elif choice == "n":
-                    with open("rejected_movies.txt", "a") as f:
-                        f.write(f"{movie}\n")
-                    continue
-
-        print("Нет фильмов с таким рейтингом")
+while True:
+    min_rating = float(input("Введите минимальный рейтинг (от 0 до 10): "))
+    if min_rating < 0 or min_rating > 10:
+        print("Пожалуйста, введите число от 0 до 10.")
+    else:
         break
 
-get_movie_rating()
+while True:
+
+    max_rating = float(input("Введите максимальный рейтинг (от 0 до 10): "))
+    if max_rating < 0 or max_rating > 10:
+        print("Пожалуйста, введите число от 0 до 10.")
+    else:
+        break
+
+url = "https://www.imdb.com/search/title?user_rating=" + str(min_rating) + "," + str(max_rating)
+response = requests.get(url)
+
+soup = BeautifulSoup(response.text, "html.parser")
+movies = soup.select(".lister-item-header a")
+ratings = soup.select(".ratings-imdb-rating")
+
+with open('movies.txt', 'a', encoding='utf-8', errors='ignore') as file:
+    while True:
+        for i in range(len(movies)):
+            with open('movies.txt', 'r', encoding='utf-8', errors='ignore') as f:
+                if movies[i].text in f.read():
+                    continue
+            print(movies[i].text + " - " + ratings[i].text.strip())
+            while True:
+                choice = input("Вам нравится фильм? (да/нет): ")
+                if choice.lower() == 'да' or choice.lower() == 'нет':
+                    break
+                else:
+                    print("Пожалуйста, введите 'да' или 'нет'.")
+            if choice.lower() == 'да':
+                print("Отлично! Наслаждайтесь просмотром!")
+                break
+            else:
+                file.write(movies[i].text + " - " + ratings[i].text.strip() + "\n")
+        if choice.lower() == 'да':
+            break
+        next_url = soup.select(".desc a")[-1]['href']
+        next_response = requests.get("https://www.imdb.com" + next_url)
+        soup = BeautifulSoup(next_response.text, "html.parser")
+        movies = soup.select(".lister-item-header a")
+        ratings = soup.select(".ratings-imdb-rating")
+        if not movies:
+            break

@@ -11,8 +11,8 @@ def get_movie_rating():
 
     while True:
         try:
-            rating = float(input("Введите рейтинг фильма: "))
-            if rating < 0 or rating > 10:
+            user_rating = float(input("Введите рейтинг фильма: "))
+            if user_rating < 0 or user_rating > 10:
                 print("Рейтинг должен быть в диапазоне от 0 до 10")
                 continue
             break
@@ -32,9 +32,9 @@ def get_movie_rating():
         for i in range(len(movie_tags)):
             movie = movie_tags[i].text.strip()
             year = movie_tags[i]["title"].split()[-1]
-            rating = float(ratings_tags[i]["data-value"])
-            if rating >= rating and movie not in rejected_movies:
-                print(f"Фильм: {movie} ({year}) Рейтинг: {rating}")
+            movie_rating = float(ratings_tags[i]["data-value"])
+            if movie_rating >= user_rating and movie not in rejected_movies:
+                print(f"Фильм: {movie} ({year}) Рейтинг: {movie_rating}")
                 choice = input("Хотите посмотреть этот фильм? (y/n): ")
                 if choice == "y":
                     return movie

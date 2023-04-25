@@ -10,22 +10,29 @@ while True:
         print("Пожалуйста, введите число от 0 до 10.")
     else:
         break
-#
-# while True:
-#
-#     max_rating = float(input("Введите максимальный рейтинг (от 0 до 10): "))
-#     if max_rating < 0 or max_rating > 10:
-#         print("Пожалуйста, введите число от 0 до 10.")
-#     else:
-#         break
 
-url = "https://www.imdb.com/search/title?user_rating=" + str(min_rating) + "," + str(min_rating+0.1) + "&start=" \
-      + str((random.randint(1, 195) * random.randint(1, 50)) + 1) + "&ref_=adv_nxt"
+url = "https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_series&user_rating=" + str(min_rating) + "," + str(min_rating+0.1)
 
-print(url)
+
 response = requests.get(url)
 
-soup = BeautifulSoup(response.text, "html.parser")
+soup_first = BeautifulSoup(response.text, "html.parser")
+desc_div = soup_first.select_one(".desc span:nth-of-type(1)")
+available_movies_text = desc_div.text
+available_movies = int(available_movies_text.split()[-2])
+
+url_precise = "https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_series&user_rating=" \
+        + str(min_rating) + "," + str(min_rating+0.1) \
+        + "&start=" + str((random.randint(1, available_movies // 50) * random.randint(1, 50)) + 1) + "&ref_=adv_nxt"
+
+response_precise = requests.get(url_precise)
+
+soup = BeautifulSoup(response_precise.text, "html.parser")
+desc_div = soup.select_one(".desc span:nth-of-type(1)")
+available_movies_text = desc_div.text
+available_movies = int(available_movies_text.split()[-2])
+
+
 movies = soup.select(".lister-item-header a")
 ratings = soup.select(".ratings-imdb-rating")
 
@@ -39,7 +46,8 @@ for movie, rating, year, description in zip(movies, ratings, years, descriptions
     rating_value = float(rating.strong.text)
     year_value = year.text.strip("()")
     description_value = description.text.strip()
-    if not description_value:
+
+    if not description_value or description_value == "Add a Plot":
         description_value = "No description"
 
     movies_ratings.append((title, rating_value, year_value, description_value))

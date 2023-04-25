@@ -19,7 +19,7 @@ while True:
 #     else:
 #         break
 
-url = "https://www.imdb.com/search/title?user_rating=" + str(min_rating) + "," + str(min_rating+0.01) + "&start=" \
+url = "https://www.imdb.com/search/title?user_rating=" + str(min_rating) + "," + str(min_rating+0.1) + "&start=" \
       + str((random.randint(1, 195) * random.randint(1, 50)) + 1) + "&ref_=adv_nxt"
 
 print(url)

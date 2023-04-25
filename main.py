@@ -19,7 +19,8 @@ response = requests.get(url)
 soup_first = BeautifulSoup(response.text, "html.parser")
 desc_div = soup_first.select_one(".desc span:nth-of-type(1)")
 available_movies_text = desc_div.text
-available_movies = int(available_movies_text.split()[-2])
+available_movies = int(available_movies_text.split()[-2].replace(',', ''))
+print(available_movies)
 
 url_precise = "https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_series&user_rating=" \
         + str(min_rating) + "," + str(min_rating+0.1) \
@@ -28,10 +29,6 @@ url_precise = "https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv
 response_precise = requests.get(url_precise)
 
 soup = BeautifulSoup(response_precise.text, "html.parser")
-desc_div = soup.select_one(".desc span:nth-of-type(1)")
-available_movies_text = desc_div.text
-available_movies = int(available_movies_text.split()[-2])
-
 
 movies = soup.select(".lister-item-header a")
 ratings = soup.select(".ratings-imdb-rating")

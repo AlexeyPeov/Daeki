@@ -4,7 +4,7 @@ import random
 import os
 
 
-def get_movie(min_rating, max_rating):
+def get_movie(min_rating, max_rating, exceptions, liked):
     # Получаем случайный фильм из TMDB с рейтингом в заданном диапазоне
     url = f"https://api.themoviedb.org/3/discover/movie?api_key=fb3b3e4a8c47e10407fa8a54e2010d5e&language=ru-RU&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&vote_average.gte={min_rating}&vote_average.lte={max_rating}"
     response = requests.get(url)
@@ -13,7 +13,10 @@ def get_movie(min_rating, max_rating):
         return None
     else:
         results = data['results']
-        random_movie = random.choice(results)
+        available_movies = [movie for movie in results if movie['title'] not in exceptions and movie['title'] not in liked]
+        if not available_movies:
+            return None
+        random_movie = random.choice(available_movies)
         movie_id = random_movie['id']
         movie_title = random_movie['title']
         movie_overview = random_movie['overview']
@@ -22,44 +25,43 @@ def get_movie(min_rating, max_rating):
         return (movie_id, movie_title, movie_overview, movie_rating, poster_path)
 
 
-def write_to_file(movie_id):
-    # Записываем ID фильма в файл исключений
-    with open("exceptions.txt", "a") as file:
-        file.write(str(movie_id) + "\n")
+def write_to_file(file_path, data):
+    # Записываем данные в файл
+    with open(file_path, "a", encoding="utf-8") as file:
+        file.write(data + "\n")
 
 
-def read_from_file():
-    # Читаем ID фильмов из файла исключений
-    with open("exceptions.txt", "r") as file:
+def read_from_file(file_path):
+    # Читаем данные из файла и возвращаем список
+    with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
-        exceptions = [int(line.strip()) for line in lines]
-        return exceptions
+        data = [line.strip() for line in lines]
+        return data
 
 
 def main():
-    # Создаем файл исключений, если его еще нет
+    # Создаем файлы исключений и понравившихся фильмов, если их еще нет
     if not os.path.exists("exceptions.txt"):
         open("exceptions.txt", "w").close()
+    if not os.path.exists("liked.txt"):
+        open("liked.txt", "w").close()
 
     # Получаем минимальный и максимальный рейтинг от пользователя
     min_rating = float(input("Введите минимальный рейтинг: "))
     max_rating = float(input("Введите максимальный рейтинг: "))
 
-    # Получаем список ID фильмов из файла исключений
-    exceptions = read_from_file()
+    # Получаем списки названий фильмов из файлов исключений и понравившихся фильмов
+    exceptions = read_from_file("exceptions.txt")
+    liked = read_from_file("liked.txt")
 
     while True:
-        # Получаем случайный фильм из TMDB с рейтингом в заданном диапазоне
-        movie_data = get_movie(min_rating, max_rating)
+        movie_data = get_movie(min_rating, max_rating, exceptions, liked)
 
         if movie_data is None:
             print("Нет фильмов в заданном диапазоне.")
             break
 
         movie_id, movie_title, movie_overview, movie_rating, poster_path = movie_data
-
-        if movie_id in exceptions:
-            continue
 
         print(f"Название: {movie_title}")
         print(f"Описание: {movie_overview}")
@@ -74,9 +76,17 @@ def main():
         answer = input("Хотите посмотреть этот фильм? (y/n) ")
 
         if answer.lower() == "y":
-            break
+            # Записываем понравившийся фильм в файл liked.txt
+            write_to_file("liked.txt", movie_title)
+            liked.append(movie_title)  # Добавляем фильм в список понравившихся
+            continue_answer = input("Хотите продолжить поиск? (y/n) ")
+            if continue_answer.lower() != "y":
+                break
+
         else:
-            write_to_file(movie_id)
+            # Записываем название фильма в файл исключений и добавляем его в список исключений
+            write_to_file("exceptions.txt", movie_title)
+            exceptions.append(movie_title)
 
 
 if __name__ == "__main__":

@@ -6,20 +6,42 @@ import os
 
 def get_movie(min_rating, max_rating, exceptions, liked):
     # Получаем случайный фильм из TMDB с рейтингом в заданном диапазоне
-    url = f"https://api.themoviedb.org/3/discover/movie?api_key=fb3b3e4a8c47e10407fa8a54e2010d5e&language=ru-RU&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&vote_average.gte={min_rating}&vote_average.lte={max_rating}"
+
+    #page = 1
+
+    #url = f"https://api.themoviedb.org/3/discover/movie?api_key=fb3b3e4a8c47e10407fa8a54e2010d5e&language=ru-RU&sort_by=popularity.desc&include_adult=false&include_video=false&page={page}&vote_average.gte={min_rating}&vote_average.lte={max_rating}"
+    url = f"https://api.themoviedb.org/3/discover/movie?api_key=fb3b3e4a8c47e10407fa8a54e2010d5e&language=ru-RU&sort_by=popularity.desc&include_adult=false&include_video=false&vote_average.gte={min_rating}&vote_average.lte={max_rating}"
     response = requests.get(url)
     data = json.loads(response.text)
+
+
     if data['total_results'] == 0:
+        print("NO RESULTS")
         return None
     else:
         results = data['results']
         available_movies = [movie for movie in results if movie['title'] not in exceptions and movie['title'] not in liked and movie['overview']]
         if not available_movies:
-            return None
+            available_movies = [movie for movie in results if
+                                movie['title'] not in exceptions and movie['title'] not in liked]
+
+            if(not available_movies):
+                return None
+
         random_movie = random.choice(available_movies)
         movie_id = random_movie['id']
         movie_title = random_movie['title']
+
         movie_overview = random_movie['overview']
+
+        if(not random_movie['overview']):
+            movie_overview = "Нет описания.."
+
+
+        if(len(movie_overview) > 350):
+            movie_overview = movie_overview[0:350] + "..."
+
+
         movie_rating = random_movie['vote_average']
         poster_path = random_movie['poster_path']
         return (movie_id, movie_title, movie_overview, movie_rating, poster_path)
@@ -46,6 +68,22 @@ def init_movie_finder():
     if not os.path.exists("liked.txt"):
         open("liked.txt", "w").close()
 
+    # Получаем списки названий фильмов из файлов исключений и понравившихся фильмов
+    exceptions = read_from_file("exceptions.txt")
+    liked = read_from_file("liked.txt")
+
+
+
+    return (exceptions, liked)
+
+
+def main():
+    # Создаем файлы исключений и понравившихся фильмов, если их еще нет
+    if not os.path.exists("exceptions.txt"):
+        open("exceptions.txt", "w").close()
+    if not os.path.exists("liked.txt"):
+        open("liked.txt", "w").close()
+
     # Получаем минимальный и максимальный рейтинг от пользователя
     min_rating = float(input("Введите минимальный рейтинг: "))
     max_rating = float(input("Введите максимальный рейтинг: "))
@@ -53,12 +91,6 @@ def init_movie_finder():
     # Получаем списки названий фильмов из файлов исключений и понравившихся фильмов
     exceptions = read_from_file("exceptions.txt")
     liked = read_from_file("liked.txt")
-
-    #todo: finish
-
-
-def main():
-
 
     while True:
         movie_data = get_movie(min_rating, max_rating, exceptions, liked)

@@ -15,9 +15,11 @@ from kivy.uix.button import Button
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty
 from kivy.uix.label import Label
+import os
 from kivy.uix.effectwidget import EffectWidget
-from kivy_garden.frostedglass import FrostedGlass
+#from kivy_garden.frostedglass import FrostedGlass
 
+import movie_finder
 
 class MyGrid(Widget):
     def btn1(self):
@@ -58,6 +60,7 @@ class ImageButton(ButtonBehavior, Image):
 class MyApp(MDApp):
     def build(self):
         Window.clearcolor = '#FAEEE5'
+        self.project_dir = os.getcwd()
         return MyGrid()
 
 def show_popup1():

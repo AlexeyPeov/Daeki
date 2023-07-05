@@ -1,0 +1,147 @@
+<MySwiper@MDSwiperItem>
+    FitImage:
+        source: app.project_dir + '/images/back.jpg'
+        radius: [20,]
+            #allow_stretch: True
+            #keep_ratio: False
+
+
+<Options>:
+    Label:
+        text: "Найстройки"
+        size_hint: 0.6, 0.2
+        pos_hint: {"x":0.2, "top":1}
+    Button:
+        text: "Нажми"
+        size_hint: 0.8, 0.2
+        pos_hint: {"x":0.1, "y":0.1}
+
+<Favorite>:
+    view: view
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            size: (64, 64)
+            size_hint: (1, None)
+
+            Label:
+                text:"Список понравившегося"
+
+        ScrollView:
+            id: view
+
+
+
+<MyGrid>
+
+    #MDScreen:
+    #    MDSwiper:
+    #        size_hint_y: None
+    #        #height: root.height - toolbar.height - dp(40)
+    #        #y: root.height - self.height - toolbar.height - dp(20)
+
+    #        MySwiper:
+
+    ImageButton:
+        source: app.project_dir+ '/images/фав.png'
+        text: "Search"
+        size_hint: None, None
+        size: 30, 30
+        on_release: root.btn1()
+        pos: root.width/13, root.height*0.93
+
+    Label:
+        bold: True
+        text: "Lefruit"
+        font_size: "20sp"
+        text_size: self.width, self.height
+        pos: root.width/2.5, root.height*0.94
+        color: (0, 0, 0, 1)
+
+    ImageButton:
+        source: app.project_dir + '/images/настройки.png'
+        text: "Search"
+        size_hint: None, None
+        size: 30, 30
+        on_release: root.btn2()
+        pos: root.width/1.2, root.height*0.93
+
+    BoxLayout:
+        id: box_1
+        orientation: "vertical"
+        size: root.width, root.height-40
+
+        padding: 10
+        spacing: 20
+
+        #MDSwiper:
+
+        Image:
+
+            id: main_box
+
+            source: app.project_dir + '/images/back.jpg'
+            allow_stretch: True
+            keep_ratio: False
+
+
+            #GridLayout:
+            #    cols:2
+
+            BoxLayout:
+                id: box_layout
+                orientation: "horizontal"
+                size: root.width, root.height*7
+                pos: -130, 350
+                padding: 10
+                spacing: 20
+                
+                AsyncImage:
+                    id: bg_image
+                    source: app.project_dir + '/images/like-1.png'
+                    allow_stretch: False
+                    keep_ratio: True
+
+            FloatLayout:
+                id: slider_box
+                size: root.width/2, root.height
+                pos: 150, -300
+
+
+
+            FloatLayout:
+                id: float_layout
+                pos: root.width/2.85, root.y+30
+                size: 100, 40
+
+                ImageButton:
+                    id: rating_text_box
+                    source: app.project_dir + '/images/like-1.png'
+                    font_size: "11sp"
+                    text_size: self.width, self.height
+                    allow_stretch: True
+                    allow_stretch: True
+                    keep_ratio: True
+                    size: 261, 261
+                    size_hint: 2,2
+                    on_release: app.liked(), app.get_movie()
+                    pos: (root.width/2.85) - 100, (root.y+30) + 180
+
+                ImageButton:
+                    id: rating_text_box
+                    source: app.project_dir + '/images/dislike-1.png'
+                    font_size: "11sp"
+                    text_size: self.width, self.height
+                    allow_stretch: True
+                    size_hint: 2,2
+                    keep_ratio: True
+                    size: 261, 261
+                    on_release: app.disliked(), app.get_movie()
+                    pos: (root.width/2.85) + 100, (root.y+30) + 180
+
+
+
+
+
